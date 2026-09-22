@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PDF E-Signer</title>
+<style>
+  :root {
+    --black: #111111;
+    --text: #16181c;
+    --muted: #52565c;
+    --border: #d6d6d6;
+    --background: #f7f7f7;
+    --white: #ffffff;
+    --hover: #f2f2f2;
+    --accent: #2451c9;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--background);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  #app {
+    max-width: 1450px;
+    margin: 0 auto;
+    padding: 36px 42px 50px;
+  }
+
+  .app-header { margin-bottom: 28px; }
+
+  .app-title {
+    color: var(--black);
+    font-size: 22px;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.35px;
+    margin: 0;
+  }
+
+  .app-subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 7px;
+  }
+
+  .workspace {
+    display: grid;
+    grid-template-columns: 3.3fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* ---------------- preview card ---------------- */
+
+  .preview-card {
+    background: #eeeeee;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    min-height: 720px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .preview-empty {
+    min-height: 680px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #555555;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .preview-inner {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .page-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--black);
+  }
+
+  .page-control button {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid #b8b8b8;
+    background: var(--white);
+    color: var(--black);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .page-control button:disabled {
+    color: #b7b7b7;
+    cursor: default;
+  }
+
+  .page-control button:not(:disabled):hover {
+    background: var(--hover);
+  }
+
+  .canvas-wrap {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    max-width: 100%;
+  }
+
+  .canvas-wrap canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .sig-box {
+    position: absolute;
+    border: 1.5px dashed var(--accent);
+    background: rgba(36, 81, 201, 0.06);
+    cursor: move;
+    touch-action: none;
+  }
+
+  .sig-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .resize-handle {
+    position: absolute;
+    right: -6px;
+    bottom: -6px;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: var(--accent);
+    border: 2px solid var(--white);
+    cursor: nwse-resize;
+    touch-action: none;
+  }
+
+  .error-message {
+    color: #b42318;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    padding: 10px;
+  }
+
+  /* ---------------- control card ---------------- */
+
+  .control-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 24px;
+  }
+
+  .control-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--black);
+    margin-bottom: 16px;
+  }
+
+  .file-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #2c2f34;
+    margin-top: 8px;
+    word-break: break-word;
+  }
+
+  .description {
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1.55;
+    margin-top: 8px;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: #e0e0e0;
+    margin: 22px 0;
+  }
+
+  .dropzone {
+    min-height: 88px;
+    padding: 12px;
+    border: 1px solid #cfcfcf;
+    border-radius: 6px;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: #4a4a4a;
+    cursor: pointer;
+    position: relative;
+    transition: 0.15s ease;
+  }
+
+  .dropzone:hover, .dropzone.dragover {
+    border-color: #9a9a9a;
+    background: #f5f5f5;
+  }
+
+  .dropzone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  button.primary, button.secondary {
+    width: 100%;
+    min-height: 46px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+    box-shadow: none;
+    transition: 0.15s ease;
+    cursor: pointer;
+  }
+
+  button.primary {
+    background: var(--black);
+    color: var(--white);
+    border: 1px solid var(--black);
+  }
+
+  button.primary:not(:disabled):hover { background: #303030; border-color: #303030; }
+
+  button.primary:disabled {
+    background: #ececec;
+    color: #a0a0a0;
+    border-color: #dddddd;
+    cursor: default;
+  }
+
+  button.secondary {
+    background: var(--white);
+    color: var(--black);
+    border: 1.5px solid var(--black);
+  }
+
+  button.secondary:hover { background: var(--black); color: var(--white); }
+
+  .success-message {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border: 1px solid #c9c9c9;
+    border-radius: 6px;
+    background: #f2f2f2;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--black);
+  }
+
+  .spacer { height: 10px; }
+
+  @media (max-width: 950px) {
+    #app { padding: 24px 18px 35px; }
+    .workspace { grid-template-columns: 1fr; }
+    .preview-card { min-height: 560px; }
+    .preview-empty { min-height: 520px; }
+  }
+
+  @media (max-width: 600px) {
+    #app { padding: 18px 12px 25px; }
+    .app-header { margin-bottom: 18px; }
+    .app-title { font-size: 20px; }
+    .app-subtitle { font-size: 12px; }
+    .preview-card { min-height: 450px; border-radius: 6px; }
+    .preview-empty { min-height: 410px; }
+    .control-card { padding: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="app-header">
+    <div class="app-title">PDF E-Signer</div>
+    <div class="app-subtitle">Sign your document directly in your browser.</div>
+  </div>
+
+  <div class="workspace">
+
+    <!-- LEFT: PREVIEW -->
+    <section class="preview-card">
+      <div v-if="!pdfBytes" class="preview-empty">
+        Select a PDF document from the panel on the right.
+      </div>
+      <div v-else class="preview-inner">
+        <div v-if="numPages > 1" class="page-control">
+          <button @click="prevPage" :disabled="pageIndex === 0">‹</button>
+          <span>Page {{ pageIndex + 1 }} / {{ numPages }}</span>
+          <button @click="nextPage" :disabled="pageIndex === numPages - 1">›</button>
+        </div>
+
+        <div class="canvas-wrap" ref="canvasWrap">
+          <canvas ref="pdfCanvas"></canvas>
+          <div
+            v-if="signatureDataUrl"
+            class="sig-box"
+            :style="sigBoxStyle"
+            @mousedown="startDrag"
+            @touchstart="startDrag"
+          >
+            <img :src="signatureDataUrl" class="sig-img" draggable="false" />
+            <div class="resize-handle" @mousedown.stop="startResize" @touchstart.stop="startResize"></div>
+          </div>
+        </div>
+
+        <div v-if="errorMsg" class="error-message">{{ errorMsg }}</div>
+      </div>
+    </section>
+
+    <!-- RIGHT: CONTROLS -->
+    <aside class="control-card">
+
+      <div class="control-title">Document</div>
+      <label class="dropzone" :class="{ dragover: pdfDragOver }"
+             @dragover.prevent="pdfDragOver = true" @dragleave.prevent="pdfDragOver = false"
+             @drop.prevent="onPdfDrop">
+        Drag and drop a PDF here, or click to browse
+        <input type="file" accept="application/pdf" @change="onPdfSelected" />
+      </label>
+      <div v-if="pdfName" class="file-name">{{ pdfName }}</div>
+
+      <div class="divider"></div>
+
+      <div class="control-title">Electronic signature</div>
+      <label class="dropzone" :class="{ dragover: sigDragOver }"
+             @dragover.prevent="sigDragOver = true" @dragleave.prevent="sigDragOver = false"
+             @drop.prevent="onSignatureDrop">
+        Drag and drop an image here, or click to browse
+        <input type="file" accept="image/png,image/jpeg" @change="onSignatureSelected" />
+      </label>
+      <div v-if="signatureName" class="file-name">{{ signatureName }}</div>
+      <div class="description">Drag the signature on the document. Use the corner handle to resize it.</div>
+
+      <div class="divider"></div>
+
+      <button class="primary" :disabled="!canApply" @click="applySignature">Apply signature</button>
+
+      <template v-if="signedPdfBytes">
+        <div class="spacer"></div>
+        <button class="secondary" @click="downloadSignedPdf">Download signed PDF</button>
+        <div class="success-message">Your signed PDF is ready.</div>
+      </template>
+
+    </aside>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+<script>
+const { createApp, ref, reactive, computed, onMounted, watch, nextTick } = Vue;
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+createApp({
+  setup() {
+    const pdfBytes = ref(null);       // Uint8Array, kept pristine for pdf-lib
+    const pdfName = ref(null);
+    const numPages = ref(0);
+    const pageIndex = ref(0);
+    const errorMsg = ref("");
+
+    const signatureBytes = ref(null); // ArrayBuffer, kept pristine for pdf-lib
+    const signatureDataUrl = ref(null);
+    const signatureName = ref(null);
+    const signatureMime = ref(null);
+
+    const position = reactive({ x: 0.65, y: 0.78, w: 0.22, h: 0.10 });
+
+    const signedPdfBytes = ref(null);
+    const signedName = ref(null);
+
+    const pdfDragOver = ref(false);
+    const sigDragOver = ref(false);
+
+    const canvasWrap = ref(null);
+    const pdfCanvas = ref(null);
+
+    let pdfDocProxy = null;
+
+    const canApply = computed(() => !!pdfBytes.value && !!signatureBytes.value);
+
+    const sigBoxStyle = computed(() => ({
+      left: (position.x * 100) + "%",
+      top: (position.y * 100) + "%",
+      width: (position.w * 100) + "%",
+      height: (position.h * 100) + "%",
+    }));
+
+    function resetSignaturePosition() {
+      position.x = 0.65;
+      position.y = 0.78;
+      position.w = 0.22;
+      position.h = 0.10;
+    }
+
+    async function loadPdf(bytes, name) {
+      errorMsg.value = "";
+      signedPdfBytes.value = null;
+      signedName.value = null;
+      pdfBytes.value = bytes;
+      pdfName.value = name;
+      pageIndex.value = 0;
+      resetSignaturePosition();
+
+      try {
+        const loadingTask = pdfjsLib.getDocument({ data: bytes.slice() });
+        pdfDocProxy = await loadingTask.promise;
+        numPages.value = pdfDocProxy.numPages;
+        await nextTick();
+        await renderPage();
+      } catch (e) {
+        if (e && e.name === "PasswordException") {
+          errorMsg.value = "This PDF is password protected and cannot be opened.";
+        } else {
+          errorMsg.value = "Unable to display the PDF: " + (e && e.message ? e.message : e);
+        }
+        pdfDocProxy = null;
+        numPages.value = 0;
+      }
+    }
+
+    async function renderPage() {
+      if (!pdfDocProxy || !pdfCanvas.value) return;
+      const page = await pdfDocProxy.getPage(pageIndex.value + 1);
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = pdfCanvas.value;
+      const ctx = canvas.getContext("2d");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      canvas.style.width = viewport.width + "px";
+      canvas.style.height = viewport.height + "px";
+      await page.render({ canvasContext: ctx, viewport }).promise;
+    }
+
+    watch(pageIndex, async () => {
+      await nextTick();
+      renderPage();
+    });
+
+    function prevPage() { if (pageIndex.value > 0) pageIndex.value -= 1; }
+    function nextPage() { if (pageIndex.value < numPages.value - 1) pageIndex.value += 1; }
+
+    function onPdfSelected(evt) {
+      const file = evt.target.files && evt.target.files[0];
+      if (file) readPdfFile(file);
+      evt.target.value = "";
+    }
+
+    function onPdfDrop(evt) {
+      pdfDragOver.value = false;
+      const file = evt.dataTransfer.files && evt.dataTransfer.files[0];
+      if (file && file.type === "application/pdf") readPdfFile(file);
+    }
+
+    function readPdfFile(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const bytes = new Uint8Array(reader.result);
+        loadPdf(bytes, file.name);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function onSignatureSelected(evt) {
+      const file = evt.target.files && evt.target.files[0];
+      if (file) readSignatureFile(file);
+      evt.target.value = "";
+    }
+
+    function onSignatureDrop(evt) {
+      sigDragOver.value = false;
+      const file = evt.dataTransfer.files && evt.dataTransfer.files[0];
+      if (file && (file.type === "image/png" || file.type === "image/jpeg")) readSignatureFile(file);
+    }
+
+    function readSignatureFile(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        signatureBytes.value = reader.result;
+        signatureMime.value = file.type;
+        signatureName.value = file.name;
+        const b64 = arrayBufferToBase64(reader.result);
+        signatureDataUrl.value = "data:" + file.type + ";base64," + b64;
+        signedPdfBytes.value = null;
+        signedName.value = null;
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function arrayBufferToBase64(buffer) {
+      let binary = "";
+      const bytes = new Uint8Array(buffer);
+      const chunk = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunk) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+      }
+      return btoa(binary);
+    }
+
+    // ---------------- drag & resize ----------------
+
+    let dragState = null;
+
+    function pointerXY(evt) {
+      if (evt.touches && evt.touches.length) {
+        return { x: evt.touches[0].clientX, y: evt.touches[0].clientY };
+      }
+      return { x: evt.clientX, y: evt.clientY };
+    }
+
+    function startDrag(evt) {
+      if (!canvasWrap.value) return;
+      const rect = canvasWrap.value.getBoundingClientRect();
+      const p = pointerXY(evt);
+      dragState = {
+        mode: "move",
+        rect,
+        startX: p.x,
+        startY: p.y,
+        origX: position.x,
+        origY: position.y,
+      };
+      window.addEventListener("mousemove", onPointerMove);
+      window.addEventListener("mouseup", stopDrag);
+      window.addEventListener("touchmove", onPointerMove, { passive: false });
+      window.addEventListener("touchend", stopDrag);
+    }
+
+    function startResize(evt) {
+      if (!canvasWrap.value) return;
+      const rect = canvasWrap.value.getBoundingClientRect();
+      const p = pointerXY(evt);
+      dragState = {
+        mode: "resize",
+        rect,
+        startX: p.x,
+        startY: p.y,
+        origW: position.w,
+        origH: position.h,
+      };
+      window.addEventListener("mousemove", onPointerMove);
+      window.addEventListener("mouseup", stopDrag);
+      window.addEventListener("touchmove", onPointerMove, { passive: false });
+      window.addEventListener("touchend", stopDrag);
+    }
+
+    function onPointerMove(evt) {
+      if (!dragState) return;
+      evt.preventDefault();
+      const p = pointerXY(evt);
+      const dx = (p.x - dragState.startX) / dragState.rect.width;
+      const dy = (p.y - dragState.startY) / dragState.rect.height;
+
+      if (dragState.mode === "move") {
+        let nx = dragState.origX + dx;
+        let ny = dragState.origY + dy;
+        nx = Math.max(0, Math.min(nx, 1 - position.w));
+        ny = Math.max(0, Math.min(ny, 1 - position.h));
+        position.x = nx;
+        position.y = ny;
+      } else if (dragState.mode === "resize") {
+        let nw = dragState.origW + dx;
+        let nh = dragState.origH + dy;
+        nw = Math.max(0.04, Math.min(nw, 1 - position.x));
+        nh = Math.max(0.03, Math.min(nh, 1 - position.y));
+        position.w = nw;
+        position.h = nh;
+      }
+    }
+
+    function stopDrag() {
+      dragState = null;
+      window.removeEventListener("mousemove", onPointerMove);
+      window.removeEventListener("mouseup", stopDrag);
+      window.removeEventListener("touchmove", onPointerMove);
+      window.removeEventListener("touchend", stopDrag);
+    }
+
+    // ---------------- apply & download ----------------
+
+    async function applySignature() {
+      if (!canApply.value) return;
+      errorMsg.value = "";
+      try {
+        const pdfDocLib = await PDFLib.PDFDocument.load(pdfBytes.value.slice());
+        const pages = pdfDocLib.getPages();
+        const targetIndex = Math.max(0, Math.min(pageIndex.value, pages.length - 1));
+        const targetPage = pages[targetIndex];
+        const { width: pw, height: ph } = targetPage.getSize();
+
+        let embeddedImg;
+        if (signatureMime.value === "image/png") {
+          embeddedImg = await pdfDocLib.embedPng(signatureBytes.value);
+        } else {
+          embeddedImg = await pdfDocLib.embedJpg(signatureBytes.value);
+        }
+
+        const w = Math.max(0.01, Math.min(position.w, 1.0));
+        const h = Math.max(0.01, Math.min(position.h, 1.0));
+        const x = Math.max(0.0, Math.min(position.x, 1.0 - w));
+        const y = Math.max(0.0, Math.min(position.y, 1.0 - h));
+
+        const drawW = w * pw;
+        const drawH = h * ph;
+        const drawX = x * pw;
+        const drawY = ph - (y + h) * ph;
+
+        targetPage.drawImage(embeddedImg, { x: drawX, y: drawY, width: drawW, height: drawH });
+
+        const outBytes = await pdfDocLib.save();
+        signedPdfBytes.value = outBytes;
+        signedName.value = pdfName.value.replace(/\.pdf$/i, "") + "_signed.pdf";
+      } catch (e) {
+        errorMsg.value = "Unable to apply the signature: " + (e && e.message ? e.message : e);
+      }
+    }
+
+    function downloadSignedPdf() {
+      if (!signedPdfBytes.value) return;
+      const blob = new Blob([signedPdfBytes.value], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = signedName.value || "signed.pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }
+
+    return {
+      pdfBytes, pdfName, numPages, pageIndex, errorMsg,
+      signatureDataUrl, signatureName,
+      position, sigBoxStyle, canApply,
+      signedPdfBytes,
+      pdfDragOver, sigDragOver,
+      canvasWrap, pdfCanvas,
+      prevPage, nextPage,
+      onPdfSelected, onPdfDrop,
+      onSignatureSelected, onSignatureDrop,
+      startDrag, startResize,
+      applySignature, downloadSignedPdf,
+    };
+  },
+}).mount("#app");
+</script>
+
+</body>
+</html>

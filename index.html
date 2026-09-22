@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF E-Signer — Welcome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --text: #111111;
+      --text-muted: #666666;
+      --border: #e5e5e5;
+      --accent: #111111;
+      --accent-hover: #333333;
+      --radius: 14px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.04);
+      --shadow-hover: 0 4px 12px rgba(0,0,0,0.08), 0 16px 40px rgba(0,0,0,0.06);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Fade-in animation */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .fade-in-delay-1 { transition-delay: 0.1s; }
+    .fade-in-delay-2 { transition-delay: 0.2s; }
+    .fade-in-delay-3 { transition-delay: 0.3s; }
+    .fade-in-delay-4 { transition-delay: 0.4s; }
+
+    /* Main */
+    .main {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 64px 28px 96px;
+    }
+
+    /* Hero */
+    .hero {
+      margin-bottom: 64px;
+      text-align: left;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: #f0f0f0;
+      padding: 5px 12px;
+      border-radius: 20px;
+      margin-bottom: 22px;
+      letter-spacing: 0.01em;
+    }
+
+    .hero h1 {
+      font-size: 44px;
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin-bottom: 18px;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 500px;
+      margin-bottom: 30px;
+      line-height: 1.65;
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: #f5f5f5;
+      border-color: #ccc;
+      transform: translateY(-2px);
+    }
+
+    /* Section label */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    /* Features — dotted border cards */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+      margin-bottom: 64px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1.5px dotted #c8c8c8;
+      border-radius: var(--radius);
+      padding: 26px 24px;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      border-color: #999;
+      border-style: solid;
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .feature-card .num {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      letter-spacing: 0.04em;
+    }
+
+    .feature-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: -0.015em;
+    }
+
+    .feature-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* How it works */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 64px;
+      border: 1.5px dotted #c8c8c8;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .steps:hover {
+      border-color: #999;
+      border-style: solid;
+      box-shadow: var(--shadow);
+    }
+
+    .step {
+      display: flex;
+      gap: 18px;
+      padding: 22px 24px;
+      border-bottom: 1px solid var(--border);
+      align-items: flex-start;
+      transition: background 0.25s ease;
+    }
+
+    .step:last-child {
+      border-bottom: none;
+    }
+
+    .step:hover {
+      background: #f9f9f9;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #111;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.25s ease;
+    }
+
+    .step:hover .step-num {
+      transform: scale(1.08);
+    }
+
+    .step h4 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .step p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Preview */
+    .preview-section {
+      margin-bottom: 64px;
+    }
+
+    .preview-frame {
+      background: var(--surface);
+      border: 1.5px dotted #c8c8c8;
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .preview-frame:hover {
+      border-color: #999;
+      border-style: solid;
+      box-shadow: var(--shadow-hover);
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #f9f9f9;
+    }
+
+    .preview-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ddd;
+    }
+
+    .preview-dot:nth-child(1) { background: #ff5f57; }
+    .preview-dot:nth-child(2) { background: #febc2e; }
+    .preview-dot:nth-child(3) { background: #28c840; }
+
+    .preview-body {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      min-height: 300px;
+    }
+
+    .preview-canvas {
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      border-right: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .preview-panel {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .preview-panel h5 {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .fake-upload {
+      border: 1.5px dashed #ccc;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: #fafafa;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .fake-upload:hover {
+      border-color: #999;
+      background: #f5f5f5;
+    }
+
+    .fake-btn {
+      width: 100%;
+      padding: 11px;
+      background: #e8e8e8;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #888;
+      cursor: default;
+      transition: background 0.2s ease;
+    }
+
+    .fake-btn:hover {
+      background: #ddd;
+    }
+
+    /* Footer */
+    .footer-note {
+      font-size: 13px;
+      color: var(--text-muted);
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+      letter-spacing: 0.01em;
+    }
+
+    .footer-note a {
+      color: var(--text);
+      font-weight: 500;
+      text-decoration: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .footer-note a:hover {
+      opacity: 0.7;
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .main {
+        padding: 40px 20px 72px;
+      }
+
+      .hero h1 {
+        font-size: 30px;
+      }
+
+      .hero p {
+        font-size: 16px;
+      }
+
+      .preview-body {
+        grid-template-columns: 1fr;
+      }
+
+      .preview-canvas {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        min-height: 160px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="main">
+    <section class="hero fade-in">
+      <div class="hero-badge">Browser-based · No install</div>
+      <h1>Sign your PDF<br />directly in the browser.</h1>
+      <p>
+        Upload a document, drop in your signature image, drag it into place,
+        and download the signed PDF — all without leaving your browser.
+      </p>
+      <div class="cta-group">
+        <a class="btn btn-primary" href="main.html">
+          Launch App →
+        </a>
+        <a class="btn btn-secondary" href="#how">
+          How it works
+        </a>
+      </div>
+    </section>
+
+     <div class="section-label fade-in">App preview</div>
+    <div class="preview-section fade-in fade-in-delay-1">
+      <div class="preview-frame">
+        <div class="preview-header">
+          <div class="preview-dot"></div>
+          <div class="preview-dot"></div>
+          <div class="preview-dot"></div>
+          <span style="margin-left:12px;font-size:12px;color:#888;">pdf-esign.streamlit.app</span>
+        </div>
+        <div class="preview-body">
+          <div class="preview-canvas">
+            Select a PDF document from the panel on the right.
+          </div>
+          <div class="preview-panel">
+            <div>
+              <h5>Document</h5>
+              <div class="fake-upload">↑ Upload · 200MB · PDF</div>
+            </div>
+            <div>
+              <h5>Electronic signature</h5>
+              <div class="fake-upload">↑ Upload · PNG, JPG</div>
+              <p style="font-size:12px;color:#888;margin-top:10px;line-height:1.45;">
+                Drag the signature on the document. Use the corner handle to resize it.
+              </p>
+            </div>
+            <butt3on class="fake-btn" disabled>Apply signature</butt3on>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label fade-in fade-in-delay-1">Features</div>
+    <div class="features">
+      <div class="feature-card fade-in fade-in-delay-1">
+        <div class="num">01</div>
+        <h3>Upload any PDF</h3>
+        <p>Drag &amp; drop or select a PDF up to 200&nbsp;MB. The document opens instantly in the viewer.</p>
+      </div>
+      <div class="feature-card fade-in fade-in-delay-2">
+        <div class="num">02</div>
+        <h3>Electronic signature</h3>
+        <p>Upload a PNG or JPG of your signature. Position and resize it with a simple drag handle.</p>
+      </div>
+      <div class="feature-card fade-in fade-in-delay-3">
+        <div class="num">03</div>
+        <h3>Apply &amp; download</h3>
+        <p>One click applies the signature to the page. Download the signed PDF when you’re ready.</p>
+      </div>
+    </div>
+
+    <div class="section-label fade-in" id="how">How it works</div>
+    <div class="steps fade-in fade-in-delay-1">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <h4>Select a PDF</h4>
+          <p>Use the Document panel to upload your file. The preview appears on the left.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <h4>Add your signature</h4>
+          <p>Upload a PNG or JPG image of your handwritten or digital signature.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <h4>Position &amp; apply</h4>
+          <p>Drag the signature onto the document and resize with the corner handle. Click Apply signature.</p>
+        </div>
+      </div>
+    </div>
+
+   
+
+    <div class="footer-note fade-in">
+      Created by <a href="https://vinsmarkadlawan.vercel.app/" target="_blank" rel="noopener">Vins Mark Adlawan</a>
+      · Hosted on Vercel
+    </div>
+  </main>
+
+  <script>
+    // Fade-in on scroll
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el));
+
+    // Trigger hero immediately
+    document.querySelector('.hero')?.classList.add('visible');
+  </script>
+</body>
+</html>
